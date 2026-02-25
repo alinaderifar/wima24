@@ -1,7 +1,7 @@
 # ==============================================================================
 # LaraClassifier Dockerfile - Coolify-Optimized Multi-stage Build
 # ==============================================================================
-# Location: deployment/docker/Dockerfile
+# Location: Dockerfile (repository root)
 #
 # This Dockerfile creates a production-ready Laravel application container
 # optimized for Coolify deployment on Hetzner Cloud.
@@ -12,7 +12,7 @@
 #   - APP_URL: Application URL
 #
 # Build:
-#   docker build -t laraclassifier:latest -f deployment/docker/Dockerfile .
+#   docker build -t laraclassifier:latest .
 #
 # Run:
 #   docker run -p 9000:9000 laraclassifier:latest
@@ -190,11 +190,11 @@ RUN mkdir -p /var/www/storage/logs \
     && chmod -R 775 /var/www/storage
 
 # Copy PHP production configuration
-COPY deployment/docker/php/php.ini /usr/local/etc/php/conf.d/99-laraclassifier.ini
-COPY deployment/docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/zz-laraclassifier.conf
+COPY php.ini /usr/local/etc/php/conf.d/99-laraclassifier.ini
+COPY php-fpm.conf /usr/local/etc/php-fpm.d/zz-laraclassifier.conf
 
 # Copy entrypoint script
-COPY deployment/docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Health check for Coolify

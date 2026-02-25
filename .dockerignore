@@ -1,12 +1,10 @@
 # ==============================================================================
 # LaraClassifier Docker Ignore File
 # ==============================================================================
-# Location: deployment/docker/.dockerignore
+# Location: .dockerignore (repository root)
 #
 # This file specifies which files and directories should be excluded from
 # the Docker build context. This reduces build time and image size.
-#
-# Copy this file to the project root as .dockerignore before building.
 #
 # ==============================================================================
 
@@ -189,9 +187,6 @@ pint.json
 # ==============================================================================
 # Notes
 # ==============================================================================
-#
-# To use this file, copy it to the project root:
-#   cp deployment/docker/.dockerignore .dockerignore
 #
 # The build context will exclude all files listed above, resulting in:
 # - Faster builds

@@ -2,7 +2,7 @@
 # ==============================================================================
 # LaraClassifier Docker Entrypoint Script
 # ==============================================================================
-# Location: deployment/docker/docker-entrypoint.sh
+# Location: docker-entrypoint.sh (repository root)
 #
 # This script runs when the Docker container starts. It handles:
 # - Waiting for dependent services (database, Redis)

@@ -1,7 +1,7 @@
 # ==============================================================================
 # LaraClassifier Docker Compose Configuration for Coolify
 # ==============================================================================
-# Location: deployment/docker/docker-compose.coolify.yml
+# Location: docker-compose.yml (repository root)
 #
 # This is a simplified Docker Compose file specifically for Coolify deployment.
 # Coolify manages databases (MariaDB/MySQL, PostgreSQL), Redis, and other
@@ -35,8 +35,8 @@ services:
   # ===========================================================================
   app:
     build:
-      context: ../..
-      dockerfile: deployment/docker/Dockerfile
+      context: .
+      dockerfile: Dockerfile
       target: production
       args:
         - APP_ENV=${APP_ENV:-production}
@@ -119,8 +119,8 @@ services:
   # ===========================================================================
   queue:
     build:
-      context: ../..
-      dockerfile: deployment/docker/Dockerfile
+      context: .
+      dockerfile: Dockerfile
       target: production
     restart: unless-stopped
     command: php artisan queue:work redis --sleep=3 --tries=3 --max-time=3600 --max-jobs=1000
@@ -161,8 +161,8 @@ services:
   # ===========================================================================
   scheduler:
     build:
-      context: ../..
-      dockerfile: deployment/docker/Dockerfile
+      context: .
+      dockerfile: Dockerfile
       target: production
     restart: unless-stopped
     command: |

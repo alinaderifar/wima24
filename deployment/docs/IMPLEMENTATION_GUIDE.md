@@ -273,8 +273,17 @@ The installation takes about 5-10 minutes and includes:
    Repository: https://github.com/your-repo/laraclassifier
    Branch: main
    Build Pack: Docker Compose
-    Docker Compose Location: deployment/docker/docker-compose.yml
+   Docker Compose Location: docker-compose.yml
    ```
+   
+   > **Note:** All Docker files are now located in the repository root for Coolify compatibility:
+   > - `Dockerfile` - Multi-stage build configuration
+   > - `docker-compose.yml` - Service orchestration
+   > - `.dockerignore` - Build context exclusions
+   > - `docker-entrypoint.sh` - Container startup script
+   > - `nginx.default.conf` - Nginx configuration (if using separate Nginx container)
+   > - `php.ini` - PHP production configuration
+   > - `php-fpm.conf` - PHP-FPM pool configuration
 
 ### Step 5.2: Link Database and Redis
 

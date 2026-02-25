@@ -618,6 +618,22 @@ ufw deny 3306/tcp
 
 ---
 
-*Document Version: 2.0*
-*Last Updated: 2026-02-24*
-*Updated for Coolify + Docker deployment*
+## Docker File Locations
+
+All Docker configuration files are located in the repository root for Coolify compatibility:
+
+| File | Location | Description |
+|------|----------|-------------|
+| `Dockerfile` | Repository root | Multi-stage build configuration |
+| `docker-compose.yml` | Repository root | Service orchestration (app, queue, scheduler) |
+| `.dockerignore` | Repository root | Build context exclusions |
+| `docker-entrypoint.sh` | Repository root | Container startup script |
+| `nginx.default.conf` | Repository root | Nginx reverse proxy configuration |
+| `php.ini` | Repository root | PHP production configuration |
+| `php-fpm.conf` | Repository root | PHP-FPM pool configuration |
+
+---
+
+*Document Version: 2.1*
+*Last Updated: 2026-02-25*
+*Updated for Coolify + Docker deployment with root-level Docker files*

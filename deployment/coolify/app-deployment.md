@@ -168,9 +168,18 @@ Choose one of the following:
 3. Configure Docker settings:
    | Setting | Value |
    |---------|-------|
-   | Dockerfile Location | `deployment/docker/Dockerfile` |
+   | Dockerfile Location | `Dockerfile` |
    | Build Target | `production` |
-   | Docker Compose Location | `deployment/docker/docker-compose.coolify.yml` |
+   | Docker Compose Location | `docker-compose.yml` |
+
+   > **Note:** All Docker files are located in the repository root for Coolify compatibility:
+   > - `Dockerfile` - Multi-stage build configuration
+   > - `docker-compose.yml` - Service orchestration
+   > - `.dockerignore` - Build context exclusions
+   > - `docker-entrypoint.sh` - Container startup script
+   > - `nginx.default.conf` - Nginx configuration (if using separate Nginx container)
+   > - `php.ini` - PHP production configuration
+   > - `php-fpm.conf` - PHP-FPM pool configuration
 
 #### Option B: Docker Compose
 
@@ -573,5 +582,6 @@ Coolify provides automatic database backups:
 
 ---
 
-*Document Version: 1.0*
-*Last Updated: 2026-02-24*
+*Document Version: 1.1*
+*Last Updated: 2026-02-25*
+*Updated: Docker files moved to repository root for Coolify compatibility*
