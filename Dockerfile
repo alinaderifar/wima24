@@ -99,25 +99,18 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www
 
 # ------------------------------------------------------------------------------
-# Stage 2: Build Frontend Assets
+# Stage 2: Build Frontend Assets (SKIPPED - assets pre-built)
 # ------------------------------------------------------------------------------
-FROM node:${NODE_VERSION}-alpine AS frontend-builder
-
-WORKDIR /var/www
-
-# Copy package files first for better caching
-COPY package*.json ./
-
-# Install dependencies with clean cache
-RUN npm ci --no-audit --no-fund
-
-# Copy source files for build
-COPY webpack.mix.js ./
-COPY resources/ ./resources/
-COPY public/ ./public/
-
-# Build production assets
-RUN npm run build
+# NOTE: Frontend assets are already built in the repository
+# If you need to rebuild, uncomment the following stage
+# FROM node:${NODE_VERSION}-alpine AS frontend-builder
+# WORKDIR /var/www
+# COPY package*.json ./
+# RUN npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+# COPY webpack.mix.js ./
+# COPY resources/ ./resources/
+# COPY public/ ./public/
+# RUN npm run build
 
 # ------------------------------------------------------------------------------
 # Stage 3: Application Builder
@@ -142,11 +135,12 @@ RUN composer install \
 # Copy application code
 COPY . .
 
-# Copy built assets from frontend stage
-COPY --from=frontend-builder /var/www/public/build ./public/build
-COPY --from=frontend-builder /var/www/public/css ./public/css
-COPY --from=frontend-builder /var/www/public/js ./public/js
-COPY --from=frontend-builder /var/www/public/mix-manifest.json ./public/mix-manifest.json
+# Skip copying built assets from frontend stage (already in public/)
+# If you enabled frontend-builder stage, uncomment these:
+# COPY --from=frontend-builder /var/www/public/build ./public/build
+# COPY --from=frontend-builder /var/www/public/css ./public/css
+# COPY --from=frontend-builder /var/www/public/js ./public/js
+# COPY --from=frontend-builder /var/www/public/mix-manifest.json ./public/mix-manifest.json
 
 # Clear Laravel caches
 RUN php artisan config:clear \
