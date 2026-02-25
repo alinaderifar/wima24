@@ -17,12 +17,12 @@
 .github
 
 # ------------------------------------------------------------------------------
-# Docker Files (prevent recursive builds)
+# Docker Files (needed for build)
 # ------------------------------------------------------------------------------
-docker-compose*.yml
-Dockerfile*
-.docker
-.dockerignore
+# Keep these Docker files in build context
+!docker-compose.yml
+!Dockerfile
+!.dockerignore
 
 # ------------------------------------------------------------------------------
 # Node.js / Frontend Build
@@ -38,7 +38,8 @@ package-lock.json
 # PHP / Composer
 # ------------------------------------------------------------------------------
 vendor
-composer.lock
+# Keep composer.lock for consistent Docker builds
+!composer.lock
 
 # ------------------------------------------------------------------------------
 # Laravel Specific
