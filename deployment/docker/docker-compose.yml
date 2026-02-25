@@ -1,0 +1,275 @@
+# ==============================================================================
+# LaraClassifier Docker Compose Configuration for Coolify
+# ==============================================================================
+# Location: deployment/docker/docker-compose.coolify.yml
+#
+# This is a simplified Docker Compose file specifically for Coolify deployment.
+# Coolify manages databases (MariaDB/MySQL, PostgreSQL), Redis, and other
+# infrastructure services separately.
+#
+# Coolify will:
+# - Build the Dockerfile automatically
+# - Inject environment variables from its dashboard
+# - Set up networking with Coolify-managed databases
+# - Configure SSL certificates automatically
+# - Handle container lifecycle and health checks
+#
+# Usage in Coolify:
+# 1. Create a new application in Coolify dashboard
+# 2. Set "Docker Compose" as deployment type
+# 3. Point to this file or paste its contents
+# 4. Configure environment variables in Coolify dashboard
+# 5. Deploy
+#
+# ==============================================================================
+
+version: '3.8'
+
+# ------------------------------------------------------------------------------
+# Services
+# ------------------------------------------------------------------------------
+services:
+
+  # ===========================================================================
+  # PHP Application Service (Main)
+  # ===========================================================================
+  app:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile
+      target: production
+      args:
+        - APP_ENV=${APP_ENV:-production}
+        - APP_KEY=${APP_KEY}
+        - APP_URL=${APP_URL}
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      # Persistent storage for uploads and logs
+      - app-storage:/var/www/storage
+    networks:
+      - coolify-network
+    environment:
+      # Application Settings (injected by Coolify)
+      - APP_ENV=${APP_ENV:-production}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - APP_KEY=${APP_KEY}
+      - APP_URL=${APP_URL}
+      
+      # Database Settings (Coolify injects these)
+      # Coolify automatically sets DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD
+      - DB_CONNECTION=${DB_CONNECTION:-mysql}
+      - DB_HOST=${DB_HOST:-db}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      
+      # Redis Settings (Coolify injects these)
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - CACHE_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - SESSION_DRIVER=redis
+      
+      # Mail Settings
+      - MAIL_MAILER=${MAIL_MAILER:-smtp}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION:-tls}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+      - MAIL_FROM_NAME="${MAIL_FROM_NAME:-LaraClassifier}"
+      
+      # External Services
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - AWS_BUCKET=${AWS_BUCKET:-}
+      - STRIPE_KEY=${STRIPE_KEY:-}
+      - STRIPE_SECRET=${STRIPE_SECRET:-}
+      - PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID:-}
+      - PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET:-}
+      
+    healthcheck:
+      test: ["CMD", "php", "artisan", "up"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    labels:
+      - "coolify.managed=true"
+      - "coolify.service=app"
+      - "coolify.type=laravel"
+      - "coolify.healthCheckPath=/health"
+      - "coolify.healthCheckInterval=30s"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # ===========================================================================
+  # Queue Worker Service
+  # ===========================================================================
+  queue:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile
+      target: production
+    restart: unless-stopped
+    command: php artisan queue:work redis --sleep=3 --tries=3 --max-time=3600 --max-jobs=1000
+    working_dir: /var/www
+    volumes:
+      - app-storage:/var/www/storage
+    networks:
+      - coolify-network
+    environment:
+      - APP_ENV=${APP_ENV:-production}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - APP_KEY=${APP_KEY}
+      - DB_CONNECTION=${DB_CONNECTION:-mysql}
+      - DB_HOST=${DB_HOST:-db}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - QUEUE_CONNECTION=redis
+    labels:
+      - "coolify.managed=true"
+      - "coolify.service=queue"
+      - "coolify.type=worker"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
+  # ===========================================================================
+  # Laravel Scheduler Service
+  # ===========================================================================
+  scheduler:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile
+      target: production
+    restart: unless-stopped
+    command: |
+      sh -c "while true; do
+        php artisan schedule:run --verbose --no-interaction &
+        sleep 60
+      done"
+    working_dir: /var/www
+    volumes:
+      - app-storage:/var/www/storage
+    networks:
+      - coolify-network
+    environment:
+      - APP_ENV=${APP_ENV:-production}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - APP_KEY=${APP_KEY}
+      - DB_CONNECTION=${DB_CONNECTION:-mysql}
+      - DB_HOST=${DB_HOST:-db}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    labels:
+      - "coolify.managed=true"
+      - "coolify.service=scheduler"
+      - "coolify.type=cron"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.05'
+          memory: 32M
+
+# ------------------------------------------------------------------------------
+# Networks
+# ------------------------------------------------------------------------------
+networks:
+  coolify-network:
+    external: true
+    name: ${COOLIFY_NETWORK:-coolify}
+
+# ------------------------------------------------------------------------------
+# Volumes
+# ------------------------------------------------------------------------------
+volumes:
+  app-storage:
+    driver: local
+    labels:
+      - "coolify.managed=true"
+
+# ==============================================================================
+# Coolify Configuration Notes
+# ==============================================================================
+#
+# COOLIFY SETUP STEPS:
+#
+# 1. Create Database in Coolify:
+#    - Go to "Databases" in Coolify dashboard
+#    - Create a new MySQL/MariaDB database
+#    - Note the generated credentials
+#
+# 2. Create Redis in Coolify:
+#    - Go to "Databases" in Coolify dashboard
+#    - Create a new Redis instance
+#    - Note the connection details
+#
+# 3. Create Application:
+#    - Go to "Applications" in Coolify dashboard
+#    - Click "New Application"
+#    - Select "Docker Compose" as source
+#    - Paste this file or point to repository
+#
+# 4. Configure Environment Variables:
+#    - In the application settings, add all required environment variables
+#    - Coolify will automatically inject database and Redis variables
+#
+# 5. Configure Domain:
+#    - Set your domain in Coolify
+#    - Enable SSL (Coolify uses Let's Encrypt automatically)
+#
+# 6. Deploy:
+#    - Click "Deploy" in Coolify dashboard
+#    - Monitor logs for any issues
+#
+# COOLIFY-INJECTED VARIABLES:
+# Coolify automatically provides these variables when you link services:
+#
+# For Database:
+#   - DB_HOST: Database container name or IP
+#   - DB_PORT: Database port (usually 3306)
+#   - DB_DATABASE: Database name
+#   - DB_USERNAME: Database username
+#   - DB_PASSWORD: Database password
+#
+# For Redis:
+#   - REDIS_HOST: Redis container name or IP
+#   - REDIS_PORT: Redis port (usually 6379)
+#   - REDIS_PASSWORD: Redis password (if configured)
+#
+# SCALING:
+# To scale queue workers, use Coolify's scaling feature:
+#   - Go to application settings
+#   - Set desired number of replicas for the queue service
+#
+# ==============================================================================

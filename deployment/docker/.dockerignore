@@ -1,0 +1,202 @@
+# ==============================================================================
+# LaraClassifier Docker Ignore File
+# ==============================================================================
+# Location: deployment/docker/.dockerignore
+#
+# This file specifies which files and directories should be excluded from
+# the Docker build context. This reduces build time and image size.
+#
+# Copy this file to the project root as .dockerignore before building.
+#
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Version Control
+# ------------------------------------------------------------------------------
+.git
+.gitignore
+.gitattributes
+.github
+
+# ------------------------------------------------------------------------------
+# Docker Files (prevent recursive builds)
+# ------------------------------------------------------------------------------
+docker-compose*.yml
+Dockerfile*
+.docker
+.dockerignore
+
+# ------------------------------------------------------------------------------
+# Node.js / Frontend Build
+# ------------------------------------------------------------------------------
+node_modules
+npm-debug.log
+yarn-error.log
+yarn.lock
+package-lock.json
+.pnpm-debug.log
+
+# ------------------------------------------------------------------------------
+# PHP / Composer
+# ------------------------------------------------------------------------------
+vendor
+composer.lock
+
+# ------------------------------------------------------------------------------
+# Laravel Specific
+# ------------------------------------------------------------------------------
+# Storage (will be mounted as volume)
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/logs/*
+storage/app/public/*
+
+# Keep .gitkeep files
+!storage/**/.gitkeep
+
+# Bootstrap cache
+bootstrap/cache/*
+
+# ------------------------------------------------------------------------------
+# IDE and Editor Files
+# ------------------------------------------------------------------------------
+.idea
+.vscode
+*.swp
+*.swo
+*~
+.project
+.settings
+.buildpath
+.DS_Store
+Thumbs.db
+
+# ------------------------------------------------------------------------------
+# Testing and Development
+# ------------------------------------------------------------------------------
+tests
+phpunit.xml
+phpunit.xml.dist
+.phpunit.result.cache
+.php-cs-fixer.cache
+.pint-cache
+coverage
+coverage.xml
+.nyc_output
+
+# ------------------------------------------------------------------------------
+# Documentation
+# ------------------------------------------------------------------------------
+docs
+*.md
+!README.md
+LICENSE
+CHANGELOG*
+CONTRIBUTING*
+
+# ------------------------------------------------------------------------------
+# Deployment Files (not needed in image)
+# ------------------------------------------------------------------------------
+deployment
+plans
+.scribe
+
+# ------------------------------------------------------------------------------
+# Environment Files
+# ------------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# ------------------------------------------------------------------------------
+# Build Artifacts
+# ------------------------------------------------------------------------------
+public/build
+public/css
+public/js
+public/mix-manifest.json
+public/hot
+
+# ------------------------------------------------------------------------------
+# Temporary Files
+# ------------------------------------------------------------------------------
+tmp
+temp
+*.tmp
+*.temp
+*.log
+*.cache
+
+# ------------------------------------------------------------------------------
+# OS Generated Files
+# ------------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ------------------------------------------------------------------------------
+# Backup Files
+# ------------------------------------------------------------------------------
+*.bak
+*.backup
+*.old
+*.orig
+
+# ------------------------------------------------------------------------------
+# Archive Files
+# ------------------------------------------------------------------------------
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# ------------------------------------------------------------------------------
+# Security Sensitive Files
+# ------------------------------------------------------------------------------
+*.pem
+*.key
+*.crt
+*.p12
+secrets
+credentials
+.ssh
+
+# ------------------------------------------------------------------------------
+# CI/CD Configuration
+# ------------------------------------------------------------------------------
+.circleci
+.travis.yml
+Jenkinsfile
+azure-pipelines.yml
+
+# ------------------------------------------------------------------------------
+# Miscellaneous
+# ------------------------------------------------------------------------------
+.editorconfig
+.styleci.yml
+.phpstorm.meta.php
+_ide_helper.php
+_ide_helper_models.php
+.php-cs-fixer.php
+pint.json
+
+# ==============================================================================
+# Notes
+# ==============================================================================
+#
+# To use this file, copy it to the project root:
+#   cp deployment/docker/.dockerignore .dockerignore
+#
+# The build context will exclude all files listed above, resulting in:
+# - Faster builds
+# - Smaller images
+# - No sensitive data in images
+# - No development files in production
+#
+# ==============================================================================

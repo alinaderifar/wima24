@@ -1,0 +1,223 @@
+{
+    "$schema": "https://coolify.io/schema.json",
+    "name": "LaraClassifier",
+    "description": "Classified Ads Web Application - Laravel-based platform for classified advertisements",
+    "version": "1.0.0",
+    "services": {
+        "app": {
+            "name": "LaraClassifier Application",
+            "type": "laravel",
+            "dockerfile": "deployment/docker/Dockerfile",
+            "buildTarget": "production",
+            "ports": [9000],
+            "healthCheck": {
+                "path": "/health",
+                "interval": "30s",
+                "timeout": "10s",
+                "retries": 3,
+                "startPeriod": "60s"
+            },
+            "resources": {
+                "limits": {
+                    "cpu": "1",
+                    "memory": "512M"
+                },
+                "reservations": {
+                    "cpu": "0.25",
+                    "memory": "128M"
+                }
+            },
+            "environment": {
+                "required": [
+                    "APP_KEY",
+                    "APP_URL",
+                    "DB_HOST",
+                    "DB_DATABASE",
+                    "DB_USERNAME",
+                    "DB_PASSWORD",
+                    "REDIS_HOST"
+                ],
+                "optional": [
+                    "AWS_ACCESS_KEY_ID",
+                    "AWS_SECRET_ACCESS_KEY",
+                    "AWS_BUCKET",
+                    "STRIPE_KEY",
+                    "STRIPE_SECRET",
+                    "PAYPAL_CLIENT_ID",
+                    "PAYPAL_CLIENT_SECRET",
+                    "MAIL_HOST",
+                    "MAIL_USERNAME",
+                    "MAIL_PASSWORD"
+                ]
+            },
+            "volumes": [
+                {
+                    "name": "app-storage",
+                    "path": "/var/www/storage",
+                    "description": "Persistent storage for uploads and logs"
+                }
+            ]
+        },
+        "queue": {
+            "name": "Queue Worker",
+            "type": "worker",
+            "command": "php artisan queue:work redis --sleep=3 --tries=3 --max-time=3600",
+            "resources": {
+                "limits": {
+                    "cpu": "0.5",
+                    "memory": "256M"
+                },
+                "reservations": {
+                    "cpu": "0.1",
+                    "memory": "64M"
+                }
+            },
+            "scaling": {
+                "min": 1,
+                "max": 5,
+                "metric": "queue_length"
+            }
+        },
+        "scheduler": {
+            "name": "Laravel Scheduler",
+            "type": "cron",
+            "command": "php artisan schedule:run --verbose --no-interaction",
+            "schedule": "* * * * *",
+            "resources": {
+                "limits": {
+                    "cpu": "0.25",
+                    "memory": "128M"
+                },
+                "reservations": {
+                    "cpu": "0.05",
+                    "memory": "32M"
+                }
+            }
+        }
+    },
+    "databases": {
+        "mysql": {
+            "type": "mysql",
+            "engine": "mariadb",
+            "version": "11.4",
+            "required": true,
+            "environment": {
+                "MYSQL_DATABASE": "laraclassifier",
+                "MYSQL_USER": "laraclassifier"
+            },
+            "resources": {
+                "limits": {
+                    "cpu": "1",
+                    "memory": "1G"
+                },
+                "reservations": {
+                    "cpu": "0.5",
+                    "memory": "256M"
+                }
+            },
+            "volumes": [
+                {
+                    "name": "db-data",
+                    "path": "/var/lib/mysql",
+                    "size": "20G"
+                }
+            ],
+            "backup": {
+                "enabled": true,
+                "schedule": "0 2 * * *",
+                "retention": 7
+            }
+        },
+        "redis": {
+            "type": "redis",
+            "version": "7",
+            "required": true,
+            "configuration": {
+                "maxmemory": "256mb",
+                "maxmemory-policy": "allkeys-lru",
+                "appendonly": "yes"
+            },
+            "resources": {
+                "limits": {
+                    "cpu": "0.5",
+                    "memory": "512M"
+                },
+                "reservations": {
+                    "cpu": "0.1",
+                    "memory": "128M"
+                }
+            }
+        }
+    },
+    "networking": {
+        "domain": {
+            "required": true,
+            "ssl": {
+                "provider": "letsencrypt",
+                "autoRenew": true
+            }
+        },
+        "ports": {
+            "http": 80,
+            "https": 443
+        }
+    },
+    "deployment": {
+        "strategy": "rolling",
+        "healthCheck": {
+            "enabled": true,
+            "path": "/health",
+            "timeout": 300
+        },
+        "rollback": {
+            "enabled": true,
+            "keepReleases": 5
+        }
+    },
+    "monitoring": {
+        "enabled": true,
+        "metrics": [
+            "cpu",
+            "memory",
+            "disk",
+            "network"
+        ],
+        "alerts": {
+            "cpu": {
+                "threshold": 80,
+                "action": "notify"
+            },
+            "memory": {
+                "threshold": 85,
+                "action": "notify"
+            },
+            "disk": {
+                "threshold": 90,
+                "action": "notify"
+            }
+        }
+    },
+    "backup": {
+        "enabled": true,
+        "schedule": "0 3 * * *",
+        "retention": 30,
+        "components": [
+            "database",
+            "storage"
+        ]
+    },
+    "webhooks": {
+        "deploy": {
+            "description": "Trigger deployment via webhook",
+            "method": "POST",
+            "authentication": "token"
+        }
+    },
+    "labels": {
+        "maintainer": "LaraClassifier Team",
+        "org.opencontainers.image.title": "LaraClassifier",
+        "org.opencontainers.image.description": "Classified Ads Web Application",
+        "org.opencontainers.image.version": "1.0.0",
+        "coolify.managed": "true"
+    }
+}

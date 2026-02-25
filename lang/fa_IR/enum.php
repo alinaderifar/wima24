@@ -1,0 +1,25 @@
+<?php 
+
+return [
+    'male' => 'آقا',
+    'female' => 'خانم',
+    'other' => 'دیگر',
+    'mr' => 'آقا',
+    'mrs' => 'خانم',
+    'mx' => 'Mx.',
+    'individual' => 'شخصی',
+    'professional' => 'حرفه ای',
+    'user_individual' => 'فرد',
+    'user_professional' => 'حرفه ای',
+    'africa' => 'آفریکا',
+    'antarctica' => 'قطب جنوب',
+    'asia' => 'آسیا',
+    'europe' => 'اروپا',
+    'north_america' => 'آمریکای شمالی',
+    'oceania' => 'اقیانوسیه',
+    'south_america' => 'آمریکای جنوبی',
+    'theme_light' => 'روشن',
+    'theme_dark' => 'تیره',
+    'theme_system' => 'سیستم',
+    'theme_auto' => 'خودکار',
+];
