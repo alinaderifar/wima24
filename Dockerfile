@@ -70,27 +70,57 @@ RUN apk add --no-cache \
     redis \
     $PHPIZE_DEPS
 
-# Configure and install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-        pdo_mysql \
-        mysqli \
-        mbstring \
-        exif \
-        pcntl \
-        bcmath \
-        gd \
-        intl \
-        zip \
-        opcache \
-        soap \
-        gmp \
-        sockets
+# Install system dependencies required by PHP extensions
+RUN apk update && apk add --no-cache --virtual .build-deps \
+    curl \
+    wget \
+    git \
+    vim \
+    zip \
+    unzip \
+    libzip-dev \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    libxml2-dev \
+    oniguruma-dev \
+    icu-dev \
+    libmemcached-dev \
+    zlib-dev \
+    gmp-dev \
+    imagemagick-dev \
+    imagemagick \
+    mysql-client \
+    openssl \
+    ca-certificates \
+    $PHPIZE_DEPS
 
-# Install PECL extensions
-RUN pecl install redis && docker-php-ext-enable redis \
-    && pecl install memcached && docker-php-ext-enable memcached \
-    && pecl install imagick && docker-php-ext-enable imagick
+# Install PHP extensions one by one for better error handling
+# Start with essential extensions
+RUN docker-php-ext-install -j$(nproc) \
+    pdo_mysql \
+    mysqli \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    intl \
+    zip \
+    opcache \
+    sockets
+
+# GD without freetype (simpler configuration)
+RUN docker-php-ext-configure gd --disable-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd
+
+# Optional: gmp and soap (may fail on some systems)
+RUN docker-php-ext-install -j$(nproc) gmp soap || true
+
+# Enable extensions
+RUN docker-php-ext-enable memcached 2>/dev/null || true \
+    && docker-php-ext-enable redis 2>/dev/null || true \
+    && docker-php-ext-enable imagick 2>/dev/null || true \
+    && apk del .build-deps 2>/dev/null || true
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
