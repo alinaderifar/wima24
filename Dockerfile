@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN docker-php-ext-install -j$(nproc) \
     pdo_mysql mysqli mbstring exif pcntl bcmath intl zip opcache gd
 
-# Install optional extensions (continue if fails)
+# Install optional extensions
 RUN pecl install redis-5.3.7 && docker-php-ext-enable redis || true
 RUN pecl install imagick && docker-php-ext-enable imagick || true
 
@@ -33,11 +33,11 @@ RUN mkdir -p storage/logs storage/framework/cache storage/framework/sessions \
     && chown -R www-data:www-data . \
     && chmod -R 775 storage bootstrap/cache
 
-# Copy PHP config if exists
-COPY php.ini /usr/local/etc/php/conf.d/99-laraclassifier.ini 2>/dev/null || true
-COPY php-fpm.conf /usr/local/etc/php-fpm.d/zz-laraclassifier.conf 2>/dev/null || true
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh 2>/dev/null || true
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh 2>/dev/null || true
+# Copy PHP config
+COPY php.ini /usr/local/etc/php/conf.d/99-laraclassifier.ini
+COPY php-fpm.conf /usr/local/etc/php-fpm.d/zz-laraclassifier.conf
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 9000
 ENV APP_ENV=production
