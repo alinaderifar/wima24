@@ -1,4 +1,4 @@
-# LaraClassifier Docker Compose - Standalone (No Coolify)
+# LaraClassifier Docker Compose - Standalone
 services:
   # Nginx Web Server
   nginx:
@@ -6,10 +6,9 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - ./:/var/www
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx-conf:/etc/nginx/conf.d
     depends_on:
       - app
     networks:
