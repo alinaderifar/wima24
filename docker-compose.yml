@@ -37,11 +37,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: production
-      args:
-        - APP_ENV=${APP_ENV:-production}
-        - APP_KEY=${APP_KEY}
-        - APP_URL=${APP_URL}
     restart: unless-stopped
     working_dir: /var/www
     volumes:
@@ -121,7 +116,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: production
     restart: unless-stopped
     command: php artisan queue:work redis --sleep=3 --tries=3 --max-time=3600 --max-jobs=1000
     working_dir: /var/www
@@ -163,7 +157,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: production
     restart: unless-stopped
     command: |
       sh -c "while true; do
